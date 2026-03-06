@@ -7,7 +7,7 @@ let firecrawlApp = null;
 function getFirecrawl() {
     if (!firecrawlApp) {
         if (!apiKey) {
-            throw new Error("FIRECRAWL_API_KEY is not set. Add it to .env.local");
+            throw new Error("FIRECRAWL_API_KEY není nastaven. Přidejte ho do .env.local");
         }
         firecrawlApp = new FirecrawlApp({ apiKey });
     }
@@ -36,7 +36,7 @@ export async function scrapeUrl(url) {
 
         if (!result.success) {
             throw new Error(
-                `FireCrawl scrape failed for ${url}: ${result.error || "Unknown error"}`
+                `FireCrawl scrape failed for ${url}: ${result.error || "Neznámá chyba"}`
             );
         }
 

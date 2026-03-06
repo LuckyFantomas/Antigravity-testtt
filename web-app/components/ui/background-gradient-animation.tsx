@@ -122,10 +122,9 @@ export const BackgroundGradientAnimation = ({
           </filter>
         </defs>
       </svg>
-      <div className={cn("", className)}>{children}</div>
       <div
         className={cn(
-          "gradients-container h-full w-full blur-lg",
+          "gradients-container absolute inset-0 z-0 h-full w-full blur-lg",
           isSafari ? "blur-2xl" : "[filter:url(#blurMe)_blur(40px)]"
         )}
       >
@@ -186,6 +185,9 @@ export const BackgroundGradientAnimation = ({
             )}
           ></div>
         )}
+      </div>
+      <div className={cn("relative z-10 h-full w-full", className)}>
+        {children}
       </div>
     </div>
   );

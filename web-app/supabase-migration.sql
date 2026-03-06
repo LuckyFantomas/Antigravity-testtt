@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS articles (
   published_at TIMESTAMPTZ,
   scraped_at TIMESTAMPTZ DEFAULT now(),
   tags TEXT[] DEFAULT '{}',
-  source_name TEXT
+  source_name TEXT,
+  image_url TEXT
 );
 
 -- 3. Indexes for performance

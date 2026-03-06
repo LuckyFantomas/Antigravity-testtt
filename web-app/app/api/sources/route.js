@@ -49,7 +49,7 @@ export async function POST(request) {
             return NextResponse.json({ success: true, count: data.length, sources: data });
         }
 
-        return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+        return NextResponse.json({ error: "Neznámá akce" }, { status: 400 });
     } catch (err) {
         console.error("[API /sources POST]", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
@@ -63,7 +63,7 @@ export async function PATCH(request) {
         const { id, ...updates } = body;
 
         if (!id) {
-            return NextResponse.json({ error: "Missing source id" }, { status: 400 });
+            return NextResponse.json({ error: "Chybí ID zdroje" }, { status: 400 });
         }
 
         const { data, error } = await supabase

@@ -17,13 +17,13 @@ export default function Header() {
                     href="/"
                     className={`nav-link ${pathname === "/" ? "active" : ""}`}
                 >
-                    📊 Dashboard
+                    📊 Přehled
                 </Link>
                 <Link
                     href="/admin"
                     className={`nav-link ${pathname === "/admin" ? "active" : ""}`}
                 >
-                    ⚙️ Sources
+                    ⚙️ Zdroje
                 </Link>
             </div>
         </nav>

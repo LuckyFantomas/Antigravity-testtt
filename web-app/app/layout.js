@@ -1,6 +1,7 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Sidebar from "@/components/Sidebar";
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 
 export const metadata = {
   title: "AI News Scraper — Přehled",
@@ -19,11 +20,15 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
         />
       </head>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="!bg-transparent">
         <ThemeProvider>
-          <div className="app-layout">
+          <BackgroundGradientAnimation
+            containerClassName="!fixed !inset-0 z-[-1] opacity-70 dark:opacity-30"
+            interactive={false}
+          />
+          <div className="app-layout relative z-10 w-full min-h-screen !bg-transparent">
             <Sidebar />
-            <main className="main-content">{children}</main>
+            <main className="main-content bg-transparent">{children}</main>
           </div>
         </ThemeProvider>
       </body>

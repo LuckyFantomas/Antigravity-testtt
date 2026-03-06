@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { scrapeUrl } from "@/lib/firecrawl";
+import { translateArticle } from "@/lib/gemini";
 
 /**
  * POST /api/scrape
@@ -54,11 +55,18 @@ export async function POST(request) {
                 }
 
                 // Extrahovat články z markdownu
-                const articles = extractArticlesFromMarkdown(
+                let articles = extractArticlesFromMarkdown(
                     scrapeResult.markdown,
                     source,
                     scrapeResult.ogImage
                 );
+
+                // Přeložit články pomocí Gemini API (asynchronní paralelní překlad)
+                if (articles.length > 0) {
+                    articles = await Promise.all(
+                        articles.map((article) => translateArticle(article))
+                    );
+                }
 
                 // Uložit články do Supabase
                 if (articles.length > 0) {
@@ -120,6 +128,7 @@ export async function POST(request) {
     }
 }
 
+
 /**
  * Extrahuje článkové sekce ze scrapovaného markdown obsahu.
  * Deterministické: používá vzory nadpisů a odkazů, žádné LLM.
@@ -134,12 +143,14 @@ function extractArticlesFromMarkdown(markdown, source, fallbackImage = null) {
     const cleanMarkdown = (text) => {
         if (!text) return "";
         return text
-            .replace(/\\/g, '')                      // Odstranit zpětná lomítka
-            .replace(/\|/g, '')                      // Odstranit svislítka
             .replace(/!\[.*?\]\([^\)]+\)/g, '')      // Odstranit markdown obrázky
             .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // [text](url) -> text
-            .replace(/https?:\/\/[^\s]+/g, '')        // Odstranit zbylé URL
-            .replace(/[*_~`\#\>\-]/g, ' ')            // Odstranit formátování a pomlčky na začátku
+            .replace(/(\*\*|__)(.*?)\1/g, '$2')      // bold
+            .replace(/(\*|_)(.*?)\1/g, '$2')         // italic
+            .replace(/`([^`]+)`/g, '$1')             // inline code
+            .replace(/<[^>]*>?/gm, '')               // HTML tagy
+            .replace(/^[#>\-*\s]+/gm, '')            // Odstranit heading markers, blockquotes nazačátku řádků
+            .replace(/[#*~|>]/g, '')                 // Odstranit zbylé markdown znaky
             .replace(/&[a-z0-9#]+;/gi, ' ')          // Odstranit HTML entity
             .replace(/\s+/g, ' ')                    // Normalizovat mezery
             .trim();
@@ -197,29 +208,30 @@ function extractArticlesFromMarkdown(markdown, source, fallbackImage = null) {
 
             // Extrahovat obrázek ze sekce
             const imageMatch = body.match(
-                /!\[.*?\]\((https?:\/\/[^\s)]+\.(?:jpg|jpeg|png|gif|webp|svg)[^\s)]*)\)/i
+                /!\[.*?\]\((https?:\/\/[^\s)]+)\)/i
             );
             const imageUrl = imageMatch ? imageMatch[1] : fallbackImage;
 
-            // Lepší shrnutí
-            const summaryLines = body
+            // Shrnutí z prvních řádků (max 300 znaků)
+            const rawSummary = body
                 .split("\n")
-                .map(l => l.trim())
-                .filter(l => l && !l.startsWith("#") && !l.startsWith("!") && !isJunk(l));
+                .filter(
+                    (line) =>
+                        line.trim() &&
+                        !line.startsWith("#") &&
+                        !line.startsWith("!")
+                )
+                .slice(0, 3)
+                .join(" ");
+            const summary = cleanMarkdown(rawSummary).substring(0, 300);
 
-            let summary = cleanMarkdown(summaryLines.slice(0, 3).join(" "));
-
-            if (summary.length > 300) {
-                summary = summary.substring(0, 297) + "...";
-            }
-
-            if (summary.length > 40 && !isJunk(summary)) {
+            if (summary.length > 20) {
                 articles.push({
                     source_id: source.id,
                     source_name: source.name,
-                    title: cleanTitle.substring(0, 200),
+                    title: cleanMarkdown(cleanTitle).substring(0, 200),
                     summary,
-                    url: articleUrl || source.url,
+                    url: articleUrl,
                     image_url: imageUrl,
                     content_markdown: body.substring(0, 5000),
                     scraped_at: now,
@@ -232,7 +244,7 @@ function extractArticlesFromMarkdown(markdown, source, fallbackImage = null) {
     // Strategie 2: Fallback
     if (articles.length === 0 && markdown.length > 100) {
         const globalImageMatch = markdown.match(
-            /!\[.*?\]\((https?:\/\/[^\s)]+\.(?:jpg|jpeg|png|gif|webp|svg)[^\s)]*)\)/i
+            /!\[.*?\]\((https?:\/\/[^\s)]+)\)/i
         );
         const imageUrl = globalImageMatch ? globalImageMatch[1] : fallbackImage;
 
@@ -243,13 +255,17 @@ function extractArticlesFromMarkdown(markdown, source, fallbackImage = null) {
             .slice(0, 6);
 
         const cleanSummary = cleanMarkdown(summaryLines.join(" ")).substring(0, 300);
-        const titleLine = summaryLines[0] || source.name;
+        const firstLine = markdown
+            .split("\n")
+            .find((l) => l.trim() && !l.startsWith("!"))
+            ?.replace(/^#+\s*/, "")
+            .trim();
 
         if (cleanSummary.length > 50 && !isJunk(cleanSummary)) {
             articles.push({
                 source_id: source.id,
                 source_name: source.name,
-                title: cleanMarkdown(titleLine).substring(0, 200),
+                title: cleanMarkdown(firstLine)?.substring(0, 200) || source.name,
                 summary: cleanSummary,
                 url: source.url,
                 image_url: imageUrl,
