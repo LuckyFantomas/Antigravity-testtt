@@ -40,14 +40,14 @@ export async function translateArticle(article) {
 
     try {
         const prompt = `
-You are a professional Czech technical translator.
-Translate the following English tech news article into highly readable, natural Czech.
+You are a professional Czech technical translator and technical writer.
+Translate and summarize the following English tech news article into highly readable, natural Czech.
 Keep all Markdown formatting, URLs, and code blocks exactly intact in the 'content_markdown' field.
 
-Translate these exactly into Czech:
-1. Title
-2. Summary (keep it punchy and short)
-3. Content Markdown (translate all text but preserve ALL markdown syntax like #, *, [], (), etc.)
+Create the JSON with these exact requirements:
+1. "title": Exact translation of the original title into Czech.
+2. "summary": Create a comprehensive, engaging summary of the article in Czech. It MUST be a detailed paragraph of exactly 5 to 10 sentences. Do not make it too short.
+3. "content_markdown": Translate all text but preserve ALL markdown syntax exactly (like #, *, [], (), etc.).
 
 Here is the source data in JSON:
 ${JSON.stringify({

@@ -120,9 +120,9 @@ export default function ArticleCard({ article }) {
                             {isExpanded && (
                                 <div className="article-full-content animate-fade-in mt-4">
                                     <div className="content-divider h-px bg-gray-200 dark:bg-gray-800 my-4"></div>
-                                    <h4 className="detail-label text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Úryvek textu</h4>
+                                    <h4 className="detail-label text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Kompletní shrnutí</h4>
                                     <p className="full-text text-sm leading-relaxed text-gray-700 dark:text-gray-300 mb-5">
-                                        {article.content_markdown ? (cleanSummary(article.content_markdown).substring(0, 600) + "...") : "Detailní informace nejsou k dispozici."}
+                                        {cleanSummary(article.summary) || "Detailní informace nejsou k dispozici."}
                                     </p>
 
                                     <div className="article-actions mt-4">
