@@ -111,25 +111,26 @@ export default function ArticleCard({ article }) {
 
                         <h3 className="article-title">{article.title}</h3>
 
-                        <div className={`article-summary-container ${isExpanded ? 'expanded' : 'collapsed'}`}>
-                            <p className="article-summary">
+                        <div className={`article-summary-container mt-3 ${isExpanded ? 'expanded' : 'collapsed'}`}>
+                            {/* Skrýt delší summary, pokud není rozbaleno, nebo ukázat uříznuté na 2 řádky */}
+                            <p className={`article-summary text-sm text-gray-600 dark:text-gray-300 ${!isExpanded ? "line-clamp-2 opacity-80" : "mb-4"}`}>
                                 {cleanSummary(article.summary)}
                             </p>
 
                             {isExpanded && (
-                                <div className="article-full-content animate-fade-in">
-                                    <div className="content-divider"></div>
-                                    <h4 className="detail-label">Shrnutí zprávy</h4>
-                                    <p className="full-text">
-                                        {cleanSummary(article.content_markdown?.substring(0, 1000)) || "Detailní informace nejsou k dispozici."}...
+                                <div className="article-full-content animate-fade-in mt-4">
+                                    <div className="content-divider h-px bg-gray-200 dark:bg-gray-800 my-4"></div>
+                                    <h4 className="detail-label text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Úryvek textu</h4>
+                                    <p className="full-text text-sm leading-relaxed text-gray-700 dark:text-gray-300 mb-5">
+                                        {article.content_markdown ? (cleanSummary(article.content_markdown).substring(0, 600) + "...") : "Detailní informace nejsou k dispozici."}
                                     </p>
 
-                                    <div className="article-actions">
+                                    <div className="article-actions mt-4">
                                         <a
                                             href={article.url || "#"}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="btn btn-primary btn-block article-external-link"
+                                            className="btn btn-primary btn-block article-external-link py-2 flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             Přejít na originální článek <ExternalLink size={16} />
