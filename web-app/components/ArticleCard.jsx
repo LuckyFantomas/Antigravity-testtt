@@ -16,7 +16,17 @@ const SOURCE_ICONS = {
 export default function ArticleCard({ article }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const sourceType = article.tags?.[0] || "newsletter";
-    const badgeClass = `article-source-badge badge-${sourceType}`;
+
+    const sourceStyles = {
+        newsletter: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+        magazine: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
+        news_site: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+        research_blog: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+        aggregator: "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20",
+    };
+    const styleClass = sourceStyles[sourceType] || sourceStyles.newsletter;
+    const badgeClass = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border backdrop-blur-md transition-colors ${styleClass}`;
+
     const Icon = SOURCE_ICONS[sourceType] || Mail;
 
     const timeAgo = (dateStr) => {
